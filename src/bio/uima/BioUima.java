@@ -64,7 +64,6 @@ public class BioUima {
 		
 		// init a CAS
 		JCas jCas = ae.newJCas(); 
-		jCas.setDocumentText("AGTGCTACCTAGATTAGT AGTGCTACCTAGATTAGT");
 		
 		// process the CAS
 		ae.process(jCas);
@@ -73,10 +72,22 @@ public class BioUima {
 		String inputJsonString = jCas.getView("alignment").getDocumentText();
 		JsonParserFactory factory=JsonParserFactory.getInstance();
 		JSONParser parser=factory.newJsonParser();
-		Map aligns = parser.parseJson(inputJsonString);
-		
+		Map alignmentData = parser.parseJson(inputJsonString);
+
+		System.out.println("Protein Code Sequence Alignment:");
+		Map aligns = (Map)alignmentData.get("sequences");
 		Iterator alignIterator = aligns.keySet().iterator();
 		String align;
+		while (alignIterator.hasNext()) {
+			align = (String)alignIterator.next();
+			System.out.println(align + ":");
+			System.out.println("\t"+(String)((ArrayList)aligns.get(align)).get(0));
+			System.out.println("\t"+(String)((ArrayList)aligns.get(align)).get(1));
+		}
+		
+		System.out.println("Protein Alignment:");
+		aligns = (Map)alignmentData.get("proteins");
+		alignIterator = aligns.keySet().iterator();
 		while (alignIterator.hasNext()) {
 			align = (String)alignIterator.next();
 			System.out.println(align + ":");
