@@ -45,7 +45,7 @@ public class SequenceAlignmentAnnotator extends JCasAnnotator_ImplBase  {
 			JsonParserFactory factory=JsonParserFactory.getInstance();
 			JSONParser parser=factory.newJsonParser();
 			Map sequences = parser.parseJson(inputJsonString);
-			ArrayList seq1, seq2;
+			ArrayList seq1, seq2, names1, names2;
 			Map alignWordData = new HashMap();
 			Map alignProteinData = new HashMap();
 			
@@ -73,11 +73,13 @@ public class SequenceAlignmentAnnotator extends JCasAnnotator_ImplBase  {
 			for (int i=0; i<sequences.size(); i++) {
 				for (int j=i+1; j<sequences.size(); j++) {
 					seq1 = (ArrayList)((Map)sequences.get("sequence"+i)).get("proteinWords");
+					names1 = (ArrayList)((Map)sequences.get("sequence"+i)).get("seqNames");
 					seq2 = (ArrayList)((Map)sequences.get("sequence"+j)).get("proteinWords");
+					names2 = (ArrayList)((Map)sequences.get("sequence"+j)).get("seqNames");
 					
 					for (int k=0; k<seq1.size(); k++) {
 						for (int m=0; m<seq2.size(); m++) {
-							alignWordData.put("seq"+i+"-"+j+"/wrd"+k+"-"+m, computeAlignment((String)seq1.get(k), (String)seq2.get(m)));
+							alignWordData.put(names1.get(i)+"-"+names2.get(j)+"/wrd"+k+"-"+m, computeAlignment((String)seq1.get(k), (String)seq2.get(m)));
 						}
 					}
 
@@ -86,7 +88,7 @@ public class SequenceAlignmentAnnotator extends JCasAnnotator_ImplBase  {
 
 					for (int k=0; k<seq1.size(); k++) {
 						for (int m=0; m<seq2.size(); m++) {
-							alignProteinData.put("seq"+i+"-"+j+"/protein"+k+"-"+m, computeAlignment((String)seq1.get(k), (String)seq2.get(m)));
+							alignProteinData.put(names1.get(i)+"-"+names2.get(j)+"/protein"+k+"-"+m, computeAlignment((String)seq1.get(k), (String)seq2.get(m)));
 						}
 					}
 				}

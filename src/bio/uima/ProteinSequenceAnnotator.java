@@ -43,20 +43,26 @@ public class ProteinSequenceAnnotator extends JCasAnnotator_ImplBase  {
 //		System.out.println(seqs[0]);
 //		System.out.println(seqs[1]);
 		Vector seqs = new Vector();
-		
+		Vector names = new Vector();
+		int j=0;
 		try {
 			InputStream stream = getContext().getResourceAsStream("dna");
 			BufferedReader buf = new BufferedReader(new InputStreamReader(stream));
-			String line; int comment;
+			String line, name=null; int comment;
 			try {
 				line = buf.readLine();
 				while (line != null) {
 					comment = line.indexOf('#');
 					if (comment >=0) {
+						name = line.substring(comment+1);
 						line = line.substring(0, comment);
 					}
 					if (!"".equals(line)) {
+						if (name == null) name = "sequence"+j;
 						seqs.add(line.trim());
+						names.add(name.trim());
+						name = null;
+						j++;
 					}
 
 					line = buf.readLine();
@@ -76,7 +82,7 @@ public class ProteinSequenceAnnotator extends JCasAnnotator_ImplBase  {
 		// all possible open reading frames and store in a CAS view
 		
 		Map datum;
-		for (int j=0; j<seqs.size(); j++) {
+		for (j=0; j<seqs.size(); j++) {
 			datum = new HashMap();
 			proteins = new Vector();
 			for (int i=0; i < proteinWords.length; i++) {
@@ -86,6 +92,7 @@ public class ProteinSequenceAnnotator extends JCasAnnotator_ImplBase  {
 			readDNASeq((String)seqs.get(j));
 			datum.put("proteinWords", proteinWords.clone());
 			datum.put("proteins", proteins.toArray());
+			datum.put("seqNames", names.toArray());
 			data.put("sequence"+j, datum);
 		} 
 
