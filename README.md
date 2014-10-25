@@ -3,7 +3,7 @@ BioUIMA
 
 This project uses the UIMA framework to analyze DNA sequences.  It works in two phases.  The [ProteinSequenceAnnotator](#proteinsequenceannotator) generates possible protein sequences and their possible open reading frames.  The [SequenceAlignmentAnnotator](#sequencealignmentannotator) aligns every pairwise combination of sequences from different DNA sequence inputs.  The [uima Puppet module](https://github.com/oeudtinsanmie/oeudtinsanmie-uima) may be useful to quickly set up a development environment.  However, it has currently only been sparsely tested on Ubuntu 14.04.
 
-Some [potential extensions](#potentialextensions) for the BioUIMA project are explored at the end of this document.
+Some [potential extensions](#potential-extensions) for the BioUIMA project are explored at the end of this document.
 
 ProteinSequenceAnnotator
 ------------------------
@@ -463,6 +463,7 @@ The MatchScoring configuration is read from the conf/scoring.json file. If a sub
 		}
 	}
 ```
+ 
 
 Potential Extensions
 --------------------
