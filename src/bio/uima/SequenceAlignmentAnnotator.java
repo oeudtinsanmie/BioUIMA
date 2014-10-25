@@ -125,8 +125,8 @@ public class SequenceAlignmentAnnotator extends JCasAnnotator_ImplBase  {
 	//
 	private String[] computeAlignment(String seq1, String seq2) {
 		// Not currently implementing any use of capitalization marking protein expression
-		seq1 = seq1.toLowerCase();
-		seq2 = seq2.toLowerCase();
+		seq1 = seq1.toUpperCase();
+		seq2 = seq2.toUpperCase();
 		
 		optArray  = new double[seq1.length()][seq2.length()];
 		pathArray = new byte  [seq1.length()][seq2.length()];

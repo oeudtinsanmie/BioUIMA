@@ -198,6 +198,9 @@ public class MatchScoring {
 	
 	public double substituteCost(String c1, String c2) {
 		if (subMatrix == null) return subsConstant;
+		if ("X".equalsIgnoreCase(c1) || "X".equalsIgnoreCase(c2) && !subMatrix.containsKey("X")) {
+			return Double.MAX_VALUE;
+		}
 		try { 
 			return (isLikelihood ? -1 : 1)*Double.parseDouble((String)((Map)subMatrix.get(c1)).get(c2));
 		}
