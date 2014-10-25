@@ -2,13 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry exported="true" kind="var" path="UIMA_HOME/lib/uima-core.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="file://Users/mhatem/code/uima/apache-uima/docs/api"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="/usr/src/uimaj/uimaj-core/target/uima-core.jar"/>
 	<classpathentry kind="lib" path="lib/quick-json-1.0.2.3.jar"/>
 	<classpathentry kind="lib" path="data"/>
+	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -53,10 +53,10 @@ public class ProteinSequenceAnnotator extends JCasAnnotator_ImplBase  {
 				while (line != null) {
 					comment = line.indexOf('#');
 					if (comment >=0) {
-						line = line.substring(comment);
+						line = line.substring(0, comment);
 					}
 					if (!"".equals(line)) {
-						seqs.add(line);
+						seqs.add(line.trim());
 					}
 
 					line = buf.readLine();
@@ -84,16 +84,17 @@ public class ProteinSequenceAnnotator extends JCasAnnotator_ImplBase  {
 				transcribing[i] = -1;
 			}
 			readDNASeq((String)seqs.get(j));
-			datum.put("proteinWords", proteinWords);
+			datum.put("proteinWords", proteinWords.clone());
 			datum.put("proteins", proteins.toArray());
 			data.put("sequence"+j, datum);
 		} 
 
 		JsonGeneratorFactory factory=JsonGeneratorFactory.getInstance();
         JSONGenerator generator=factory.newJsonGenerator();
+        String jsonData = generator.generateJson(data);
 		try {
 			JCas orf1 = cas.createView("orf1");
-			orf1.setDocumentText(generator.generateJson(data));
+			orf1.setDocumentText(jsonData.substring(1,jsonData.length()-1));
 		} catch (CASException e) {
 			e.printStackTrace();
 		}			
@@ -109,8 +110,11 @@ public class ProteinSequenceAnnotator extends JCasAnnotator_ImplBase  {
 	// See: http://en.wikipedia.org/wiki/DNA_codon_table
 	private void readDNASeq(String seq) {
 		frames[0][0] = seq.charAt(0);
+		frames[3][0] = DNAReader.opposite(frames[0][0]);
 		frames[0][1] = seq.charAt(1);
 		frames[1][0] = seq.charAt(1);
+		frames[3][1] = DNAReader.opposite(frames[0][1]);
+		frames[4][0] = DNAReader.opposite(frames[1][0]);
 
 		for (int i=2; i<seq.length(); i++) {
 			for (int j=2; j>=0; j--) {
@@ -126,7 +130,7 @@ public class ProteinSequenceAnnotator extends JCasAnnotator_ImplBase  {
 	}
 	
 	private void writeProtein(int j) {
-		String protein = DNAReader.readCodon(frames[j][0], frames[j][1],frames[j][2]);
+		String protein = DNAReader.readCodon(frames[j][0], frames[j][1], frames[j][2]);
 		if (transcribing[j] >= 0) {
 			proteinWords[j] += protein;
 			if ("X".equals(protein)) {

@@ -1,5 +1,10 @@
 package bio.uima;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,6 +12,7 @@ import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.ResourceAccessException;
 
 import bio.uima.util.MatchScoring;
 
@@ -39,17 +45,38 @@ public class SequenceAlignmentAnnotator extends JCasAnnotator_ImplBase  {
 			JsonParserFactory factory=JsonParserFactory.getInstance();
 			JSONParser parser=factory.newJsonParser();
 			Map sequences = parser.parseJson(inputJsonString);
-			
-			String[] seq1, seq2;
+			ArrayList seq1, seq2;
 			Map alignData = new HashMap();
+			
+			try {
+				InputStream stream = getContext().getResourceAsStream("scoring");
+				BufferedReader buf = new BufferedReader(new InputStreamReader(stream));
+				String line, scoringJSON = ""; 
+				try {
+					line = buf.readLine();
+					while (line != null) {
+						scoringJSON += line;
+						line = buf.readLine();
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				scoring = new MatchScoring(scoringJSON);
+			} catch (ResourceAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			for (int i=0; i<sequences.size(); i++) {
 				for (int j=i+1; j<sequences.size(); j++) {
-					seq1 = (String[])((Map)sequences.get("sequence"+i)).get("proteinWords");
-					seq2 = (String[])((Map)sequences.get("sequence"+j)).get("proteinWords");
+					seq1 = (ArrayList)((Map)sequences.get("sequence"+i)).get("proteinWords");
+					seq2 = (ArrayList)((Map)sequences.get("sequence"+j)).get("proteinWords");
 					
-					for (int k=0; k<seq1.length; k++) {
-						for (int m=0; m<seq2.length; m++) {
-							alignData.put("seq"+i+"-"+j+"/wrd"+k+"-"+m, computeAlignment(seq1[k], seq2[m]));
+					for (int k=0; k<seq1.size(); k++) {
+						for (int m=0; m<seq2.size(); m++) {
+							alignData.put("seq"+i+"-"+j+"/wrd"+k+"-"+m, computeAlignment((String)seq1.get(k), (String)seq2.get(m)));
 						}
 					}
 				}
@@ -57,10 +84,11 @@ public class SequenceAlignmentAnnotator extends JCasAnnotator_ImplBase  {
 			
 			JsonGeneratorFactory genFactory=JsonGeneratorFactory.getInstance();
 	        JSONGenerator generator=genFactory.newJsonGenerator();
+	        String alignJSON = generator.generateJson(alignData);
 			
 			// TODO: implement this	
 			JCas alignmentCas = cas.createView("alignment");
-			alignmentCas.setDocumentText(generator.generateJson(alignData));
+			alignmentCas.setDocumentText(alignJSON.substring(1,alignJSON.length()-1));
 		} catch (CASException e) {
 			e.printStackTrace();
 		}
@@ -81,6 +109,10 @@ public class SequenceAlignmentAnnotator extends JCasAnnotator_ImplBase  {
 	// {'AAGT', 'A-GT'}
 	//
 	private String[] computeAlignment(String seq1, String seq2) {
+		// Not currently implementing any use of capitalization marking protein expression
+		seq1 = seq1.toLowerCase();
+		seq2 = seq2.toLowerCase();
+		
 		optArray  = new double[seq1.length()][seq2.length()];
 		pathArray = new byte  [seq1.length()][seq2.length()];
 		gapArray =  new int   [seq1.length()][seq2.length()];
@@ -106,8 +138,8 @@ public class SequenceAlignmentAnnotator extends JCasAnnotator_ImplBase  {
 		// If profiles exist that defy this rule, this method would need to have a way to check whether substitution is better than an insdel operation
 		// Also, segregating inserts and deletes to prevent algorithm from combining an insert and a delete to get around a substitution cost.  
 		// Interactions between gap penalty functions and substitution matrices seem unclear, but allowing both inserts and deletes seems to subvert the concept of the substitution matrices.
-		for (j=0; j<seq2.length(); j++) {
-			for (i=0; i<seq1.length(); i++) {
+		for (j=1; j<seq2.length(); j++) {
+			for (i=1; i<seq1.length(); i++) {
 				if (seq1.charAt(i) == seq2.charAt(j)) {
 					optArray [i][j] = optArray[i-1][j-1];
 					pathArray[i][j] = SUBSTITUTE; // diagonal path, no substitution cost
@@ -146,8 +178,8 @@ public class SequenceAlignmentAnnotator extends JCasAnnotator_ImplBase  {
 			}
 		}
 		
-		i=seq1.length();
-		j=seq2.length();
+		i=seq1.length()-1;
+		j=seq2.length()-1;
 		String[] theAnswer = new String[2];
 		theAnswer[0] = ""; theAnswer[1] = "";
 		while (i>0 || j>0) {

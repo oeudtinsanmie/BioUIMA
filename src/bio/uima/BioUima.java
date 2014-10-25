@@ -1,12 +1,18 @@
 package bio.uima;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.uima.UIMAFramework;
 import org.apache.uima.analysis_engine.AnalysisEngine;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.util.XMLInputSource;
+
+import com.json.parsers.JSONParser;
+import com.json.parsers.JsonParserFactory;
 
 public class BioUima {
 
@@ -64,10 +70,19 @@ public class BioUima {
 		ae.process(jCas);
 		
 		// print results to stdout
-		JCas alignment = jCas.getView("alignment");
-		String[] seqs = alignment.getDocumentText().split(" ");
-		System.out.println(seqs[0]);
-		System.out.println(seqs[1]);
+		String inputJsonString = jCas.getView("alignment").getDocumentText();
+		JsonParserFactory factory=JsonParserFactory.getInstance();
+		JSONParser parser=factory.newJsonParser();
+		Map aligns = parser.parseJson(inputJsonString);
+		
+		Iterator alignIterator = aligns.keySet().iterator();
+		String align;
+		while (alignIterator.hasNext()) {
+			align = (String)alignIterator.next();
+			System.out.println(align + ":");
+			System.out.println("\t"+(String)((ArrayList)aligns.get(align)).get(0));
+			System.out.println("\t"+(String)((ArrayList)aligns.get(align)).get(1));
+		}
 	}
 
 }
